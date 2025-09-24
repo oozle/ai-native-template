@@ -1,0 +1,20 @@
+{
+  "provider": "stripe-prices",
+  "version": "1.0.0",
+  "currency": "USD",
+  "plans": [
+    {
+      "id": "dev",
+      "displayName": "Developer",
+      "billing": {
+        "type": "credit",
+        "minPurchase": 50
+      },
+      "rates": []
+    }
+  ],
+  "sla": {
+    "p99LatencyMs": 1000,
+    "uptimePct": 99.0
+  }
+}

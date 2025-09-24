@@ -17,7 +17,7 @@ def scaffold_adapter(name: str, upstream_base_url: str):
               "plans": [{"id":"dev","displayName":"Developer","billing":{"type":"credit","minPurchase":50},"rates":[]}],
               "sla":{"p99LatencyMs":1000,"uptimePct":99.0}
             }, f, indent=2)
-    return {"ok": True, "path": base}
+    return {"ok": True, "path": base, "upstream_base_url": upstream_base_url}
 
 def validate_fee_menu(path: str):
     with open(path) as f:
@@ -31,6 +31,16 @@ class H(BaseHTTPRequestHandler):
         self.send_header("Content-Type","application/json")
         self.end_headers()
         self.wfile.write(json.dumps(obj).encode())
+
+    # NEW: health + capabilities
+    def do_GET(self):
+        if self.path == "/":
+            return self._json(200, {
+                "ok": True,
+                "name": "Template Builder (demo)",
+                "capabilities": ["/scaffold_adapter", "/validate_fee_menu"]
+            })
+        return self._json(404, {"error": "not found"})
 
     def do_POST(self):
         length = int(self.headers.get("Content-Length","0"))

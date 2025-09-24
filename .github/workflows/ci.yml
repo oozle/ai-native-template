@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install fastapi uvicorn httpx pytest
+        working-directory: providers/demo-openweather/adapter
+
+      - name: Run pytest (adapter)
+        run: pytest -q
+        working-directory: providers/demo-openweather/adapter
+
+      - name: Install CLI
+        run: |
+          npm ci || npm install
+          npm link
+        working-directory: cli
+
+      - name: Validate fee menus
+        run: agentapi fees:validate providers/demo-openweather/adapter/pricing/apifee.json
