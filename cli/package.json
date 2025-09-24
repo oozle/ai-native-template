@@ -1,0 +1,7 @@
+{
+  "name": "agentapi",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {"agentapi": "src/index.js"},
+  "scripts": {"start": "node src/index.js"}
+}

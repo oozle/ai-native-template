@@ -1,0 +1,18 @@
+{
+  "$schema": "https://oss.ai-native.dev/schemas/apifee.schema.json",
+  "provider": "demo-openweather",
+  "version": "1.0.0",
+  "currency": "USD",
+  "plans": [
+    {
+      "id": "dev",
+      "displayName": "Developer",
+      "billing": {"type": "credit", "minPurchase": 50},
+      "rates": [
+        {"resource": "weather.current.get", "perCall": 0.002},
+        {"resource": "weather.forecast.get", "perCall": 0.004}
+      ],
+      "sla": {"p99LatencyMs": 800, "uptimePct": 99.5}
+    }
+  ]
+}
