@@ -1,0 +1,3 @@
+# Allow Jekyll to include dot-folders
+include:
+  - .well-known
