@@ -1,0 +1,10 @@
+{
+  "request_id": "req_01HZZ5A3H3QJCPX4",
+  "publisher_id": "urn:publisher:oozle.ai-native-template",
+  "resource_id": "kb/article/42",
+  "units": { "unit": "1k_tokens", "value": 1.7 },
+  "fee_computed": 0.0017,
+  "ts": "2025-09-30T22:15:00Z",
+  "alg": "Ed25519",
+  "signature": "BASE64_SIGNATURE"
+}
