@@ -2,7 +2,10 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/packages/receipt-verifier-ts"
-    schedule: { interval: "weekly" }
+    schedule: { interval: "daily" }
   - package-ecosystem: "pip"
     directory: "/packages/receipt-verifier-py"
-    schedule: { interval: "weekly" }
+    schedule: { interval: "daily" }
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule: { interval: "daily" }
