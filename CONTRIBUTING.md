@@ -1,8 +1,6 @@
 # Contributing
 
-1. Fork and branch from `main`.
-2. Add/modify adapters under `providers/<name>/adapter`.
-3. **Every new route must have a fee entry** in `pricing/apifee.json`.
-4. Ensure receipts are emitted and tests pass.
-5. Run `pytest` locally and `agentapi fees:validate` before opening a PR.
-6. CI must be green.
+- Use feature branches; open PRs against `main`.
+- For schema changes, update `/schemas/*.json` and add tests/examples.
+- Keep semver: breaking changes bump MAJOR.
+- Add entries to `CHANGELOG.md` with every PR.
