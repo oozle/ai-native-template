@@ -1,0 +1,6 @@
+{
+  "currency": "USD",
+  "resources": [
+    { "id": "kb/article", "unit": "1k_tokens", "rate": 0.001 }
+  ]
+}
