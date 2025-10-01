@@ -24,16 +24,11 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # Jekyll build (reads your _config.yml which includes ".well-known")
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./
           destination: ./_site
-
-      # Ensure Pages serves raw files (no Jekyll processing of the artifact)
-      - name: Add .nojekyll
-        run: touch _site/.nojekyll
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
