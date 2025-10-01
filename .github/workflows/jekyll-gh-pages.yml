@@ -24,26 +24,16 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      # Jekyll build (reads your _config.yml which includes ".well-known")
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./
           destination: ./_site
 
-      - name: Include .well-known + add .nojekyll
-        run: |
-          mkdir -p _site/.well-known
-          # Copy from root .well-known if present
-          if [ -d ".well-known" ]; then
-            cp -R .well-known/* _site/.well-known/
-          fi
-          # Copy from docs/.well-known if you move it there in future
-          if [ -d "docs/.well-known" ]; then
-            mkdir -p _site/.well-known
-            cp -R docs/.well-known/* _site/.well-known/
-          fi
-          # Ensure GitHub Pages serves raw files (no Jekyll on the artifact)
-          touch _site/.nojekyll
+      # Ensure Pages serves raw files (no Jekyll processing of the artifact)
+      - name: Add .nojekyll
+        run: touch _site/.nojekyll
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
