@@ -1,0 +1,47 @@
+{
+  "$schema": "https://example.org/schemas/agent-licensing.schema.json",
+  "publisher": {
+    "id": "urn:publisher:oozle.ai-native-template",
+    "name": "AI-Native Template Demo Publisher",
+    "contact": {
+      "email": "licensing@example.org",
+      "url": "https://example.org/licensing"
+    }
+  },
+  "permissions": {
+    "training": false,
+    "inference": true,
+    "display": true
+  },
+  "pricing": {
+    "currency": "USD",
+    "unit": "1k_tokens",
+    "rate": 0.001,
+    "free_tier": {
+      "limit": 10000,
+      "reset_interval": "month"
+    }
+  },
+  "usage": {
+    "sla": {
+      "uptime": "99.5%",
+      "max_latency_ms": 500
+    },
+    "burst_limits": {
+      "max_requests_per_minute": 60
+    }
+  },
+  "receipts": {
+    "format": "https://example.org/schemas/usage-receipt.schema.json",
+    "header": "X-Usage-Receipt",
+    "signing": {
+      "algorithm": "Ed25519",
+      "public_key_url": "https://example.org/keys/publisher.pub"
+    }
+  },
+  "disputes": {
+    "url": "https://example.org/disputes",
+    "email": "disputes@example.org"
+  },
+  "last_updated": "2025-09-30T00:00:00Z"
+}
