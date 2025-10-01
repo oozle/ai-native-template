@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oozle.github.io/ai-native-template/schemas/apifee.schema.json",
+  "title": "API Fee Manifest",
+  "type": "object",
+  "required": ["currency", "resources"],
+  "properties": {
+    "currency": { "type": "string", "minLength": 3, "maxLength": 3 },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "unit", "rate"],
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string" },
+          "unit": { "type": "string", "enum": ["1k_tokens", "byte", "request"] },
+          "rate": { "type": "number", "minimum": 0 },
+          "free_tier": {
+            "type": "object",
+            "properties": {
+              "limit": { "type": "number", "minimum": 0 },
+              "reset_interval": { "type": "string", "enum": ["day","week","month"] }
+            },
+            "required": ["limit", "reset_interval"]
+          },
+          "sla": {
+            "type": "object",
+            "properties": {
+              "uptime": { "type": "string" },
+              "max_latency_ms": { "type": "number", "minimum": 0 }
+            }
+          }
+        }
+      }
+    }
+  }
+}
