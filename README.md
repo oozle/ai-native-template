@@ -5,7 +5,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)  
 [![Build Status](https://img.shields.io/github/actions/workflow/status/oozle/ai-native-template/ci.yml?branch=main)](https://github.com/oozle/ai-native-template/actions)  
-[![Spec Alignment](https://img.shields.io/badge/Spec-CoMP%20%2F%20RSL-blueviolet)](#standards-alignment)  
+[![Spec Alignment](https://img.shields.io/badge/Spec-CoMP%20%2F%20RSL-blueviolet)](#-standards-alignment)  
 
 ---
 
@@ -15,9 +15,11 @@ AI-Native Template is an **open-source adapter kit** that lets publishers and AP
 
 - **Licensing & pricing manifests** in machine-readable form  
 - **Signed usage receipts** so agents can prove what they consumed  
+- **JSON Schemas** for fee menus and receipts  
 - **Schema validators & CLI tools** to reduce friction for developers  
-- **Edge enforcement examples** (e.g. Cloudflare Worker, NGINX) to block unpaid AI crawlers  
-- **OSS reference implementation** aligned with the **IAB Tech Lab CoMP working group**  
+- **Verifier libraries** (Python, TypeScript) for easy integration  
+- **Edge enforcement examples** (Cloudflare Worker, NGINX) to block unpaid AI crawlers  
+- **Governance scaffolding** (contribution guidelines, security model, spec references)  
 
 This project is not a company product — it’s a **community reference implementation** intended to accelerate adoption of AI-native compensation standards.  
 
@@ -25,22 +27,22 @@ This project is not a company product — it’s a **community reference impleme
 
 ## 🚀 Quickstart
 
-Fetch the demo manifest:
+Fetch the live manifest:
 
 ```bash
 curl https://oozle.github.io/ai-native-template/.well-known/agent-licensing.json
 ```
 
-Validate it with the CLI:
+Validate it against schema:
 
 ```bash
-agentapi fees:validate docs/.well-known/agent-licensing.json
+ajv validate -s schemas/apifee.schema.json -d apifee.json
 ```
 
-Verify a signed receipt (example header file):
+Verify a signed receipt (example):
 
 ```bash
-agentapi receipts:verify examples/receipt.txt keys/publisher.pub
+agentapi receipts:verify examples/receipt.example.json keys/publisher.pub
 ```
 
 ---
@@ -50,10 +52,10 @@ agentapi receipts:verify examples/receipt.txt keys/publisher.pub
 | Concept                        | Implemented As                          |
 |--------------------------------|-----------------------------------------|
 | **Licensing Manifest**         | `/.well-known/agent-licensing.json`      |
-| **Pricing Surface**            | `apifee.json` + `apifee.schema.json`    |
-| **Usage Receipts**             | `X-Usage-Receipt` header (signed)        |
-| **Edge Enforcement**           | Cloudflare Worker & NGINX examples      |
-| **Training vs Inference Flags**| `permissions.training / inference`       |
+| **Pricing Surface**            | `apifee.json` + `schemas/apifee.schema.json` |
+| **Usage Receipts**             | `X-Usage-Receipt` header (signed, JSON schema in `schemas/usage-receipt.schema.json`) |
+| **Edge Enforcement**           | Cloudflare Worker (`examples/cloudflare-worker.js`), NGINX snippet |
+| **Training vs Inference Flags**| `permissions.training / inference` in manifest |
 | **Dispute Handling**           | `disputes.url` + `disputes.email`        |
 | **Provenance (future)**        | planned C2PA-style receipt extensions   |
 
@@ -67,16 +69,25 @@ ai-native-template/
 │   └── .well-known/
 │       └── agent-licensing.json   # Live manifest (GitHub Pages)
 ├── schemas/
-│   ├── apifee.schema.json
-│   └── usage-receipt.schema.json
+│   ├── apifee.schema.json         # Fee menu schema
+│   └── usage-receipt.schema.json  # Receipt schema
 ├── cli/
 │   └── agentapi                   # CLI validator & verifier
+├── packages/
+│   ├── receipt-verifier-ts/       # TypeScript verifier
+│   └── receipt-verifier-py/       # Python verifier
 ├── examples/
 │   ├── openweather_adapter/       # API adapter demo
-│   └── static_site_publisher/     # Markdown static site demo
+│   ├── static_site_publisher/     # Markdown static site demo
+│   ├── cloudflare-worker.js       # Edge enforcement
+│   └── nginx.conf                 # NGINX snippet
 ├── tests/                         # Pytest-based validation
 ├── ROADMAP.md
+├── CHANGELOG.md
 ├── CONTRIBUTING.md
+├── SECURITY.md
+├── CODEOWNERS
+├── SPEC-REFERENCES.md
 └── LICENSE
 ```
 
@@ -90,44 +101,58 @@ Every response can include an `X-Usage-Receipt` header:
 X-Usage-Receipt: eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9...
 ```
 
-Receipts contain:
+### Receipt Schema (simplified)
 
-- `request_id` (unique nonce)  
-- `publisher_id`  
-- `resource_id`  
-- `units` consumed (tokens, bytes, requests)  
-- `fee_computed`  
-- `ts` timestamp  
-- `signature` (Ed25519)  
+```json
+{
+  "request_id": "req_01HZZ5A3H3QJCPX4",
+  "publisher_id": "urn:publisher:oozle.ai-native-template",
+  "resource_id": "kb/article/42",
+  "units": { "unit": "1k_tokens", "value": 1.7 },
+  "fee_computed": 0.0017,
+  "ts": "2025-09-30T22:15:00Z",
+  "alg": "Ed25519",
+  "signature": "BASE64_SIGNATURE"
+}
+```
 
-Agents can verify receipts using the CLI or a lightweight library.  
+Agents can verify receipts using the CLI or the provided verifier libraries.  
 
 ---
 
 ## 🛡️ Edge Enforcement
 
-Example: block AI crawlers unless they present valid receipts.
+Block AI crawlers unless they present valid receipts.
 
 ### Cloudflare Worker
 
 ```js
 export default {
-  async fetch(request, env) {
+  async fetch(request) {
     const url = new URL(request.url);
     if (url.pathname.startsWith('/api/')) {
-      if (!request.headers.get("X-Usage-Receipt")) {
-        return new Response(
-          JSON.stringify({
-            error: "Payment required",
-            manifest: "https://oozle.github.io/ai-native-template/.well-known/agent-licensing.json"
-          }),
-          { status: 402, headers: { "Content-Type": "application/json" } }
-        );
+      const receipt = request.headers.get('X-Usage-Receipt');
+      if (!receipt) {
+        return new Response(JSON.stringify({
+          error: "Payment required",
+          manifest: "https://oozle.github.io/ai-native-template/.well-known/agent-licensing.json"
+        }), { status: 402, headers: { "content-type": "application/json" }});
       }
     }
     return fetch(request);
   }
 };
+```
+
+### NGINX Snippet
+
+```nginx
+location /api/ {
+  if ($http_x_usage_receipt = "") {
+    return 402 '{"error":"Payment required","manifest":"https://oozle.github.io/ai-native-template/.well-known/agent-licensing.json"}';
+  }
+  proxy_pass http://origin_upstream;
+}
 ```
 
 ---
@@ -144,13 +169,13 @@ Highlights:
 
 ---
 
-## 🤝 Contributing
+## 📈 Governance & Specs
 
-We welcome contributions!  
-
-- Open issues or PRs for schema feedback, new adapters, or enforcement examples.  
-- Add yourself to `ADOPTERS.md` if you integrate this template into a project.  
-- Follow our [CONTRIBUTING.md](CONTRIBUTING.md) guidelines.  
+- [CONTRIBUTING.md](CONTRIBUTING.md) — how to contribute  
+- [SECURITY.md](SECURITY.md) — threat model & reporting  
+- [CODEOWNERS](CODEOWNERS) — repo ownership  
+- [SPEC-REFERENCES.md](SPEC-REFERENCES.md) — CoMP, RSL, Cloudflare, C2PA links  
+- [ADOPTERS.md](ADOPTERS.md) — for projects using this template  
 
 ---
 
