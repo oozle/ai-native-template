@@ -94,14 +94,19 @@ npx ajv validate --spec=draft2020 -s schemas/usage-receipt.schema.json -d exampl
 
 ### 4. Generate and verify a signed receipt (Python)
 
-Generate a real signed example receipt:
+Generate a real signed example receipt (UUID-based `request_id` ensures schema validity):  
 ```bash
 python scripts/sign_example_receipt.py
 ```
 
-Verify it with the bundled public key:
+Verify it with the bundled public key:  
 ```bash
 python packages/receipt-verifier-py/verify.py examples/receipt.example.json keys/publisher.pub
+```
+
+(Optional) Validate the generated receipt against schema to confirm it passes structural checks:  
+```bash
+npx ajv validate --spec=draft2020 -s schemas/usage-receipt.schema.json -d examples/receipt.example.json -c ajv-formats
 ```
 
 ---
