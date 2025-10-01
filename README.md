@@ -1,25 +1,34 @@
-# AI-Native Template
+# AI-Native Template  
 
-> **Reference Implementation** for making any API or website **agent-ready**.  
-> Implements emerging standards like **CoMP** (AI Content Monetization Protocols), **RSL** (Really Simple Licensing), and is designed to interoperate with future **AP2/APIs** for agentic content.  
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)  
-[![Build Status](https://img.shields.io/github/actions/workflow/status/oozle/ai-native-template/jekyll-gh-pages.yml?branch=main)](https://github.com/oozle/ai-native-template/actions)  
-[![Spec Alignment](https://img.shields.io/badge/Spec-CoMP%20%2F%20RSL-blueviolet)](#-standards-alignment)  
+> **A reference implementation to help websites and APIs get fairly compensated when AI systems use their content.**
 
 ---
 
-## ✨ What This Is
+## 🌍 What Problem Are We Solving?  
 
-AI-Native Template is an **open-source adapter kit** that lets publishers and API providers expose:  
+Today, AI agents (like chatbots, search engines, and assistants) read and use huge amounts of online content — articles, data, APIs — without asking permission, showing ads, or paying the publisher.  
 
-- **Licensing & pricing manifests** in machine-readable form  
-- **Signed usage receipts** so agents can prove what they consumed  
-- **JSON Schemas** for fee menus and receipts  
-- **Schema validators & CLI tools** to reduce friction for developers  
-- **Verifier libraries** (Python, TypeScript) for easy integration  
-- **Edge enforcement examples** (Cloudflare Worker, NGINX) to block unpaid AI crawlers  
-- **Governance scaffolding** (contribution guidelines, security model, spec references)  
+For publishers and API providers, this means:  
+- **Lost revenue** – traffic and ad income drop when users get answers directly from AI.  
+- **No transparency** – it’s impossible to know who used your content, when, or how much.  
+- **No way to enforce terms** – publishers can publish content, but can’t attach “rules” that AI systems respect.  
+
+This project tackles that gap by giving websites and APIs a **simple, machine-readable way to say:**  
+- “Here are my terms.”  
+- “Here’s what it costs for AI to use my data.”  
+- “Here’s a signed receipt proving usage.”  
+
+In plain terms: it’s like adding a **price tag and a receipt printer** to your website or API, so AI agents can consume your content **fairly and transparently** instead of for free.  
+
+---
+
+## ✨ What This Is  
+
+AI-Native Template is an **open-source adapter kit** that:  
+- Publishes **licensing & pricing manifests** (machine-readable JSON).  
+- Issues **signed usage receipts** so AI agents can prove they paid.  
+- Provides **schemas, validators, and verifier code** for easy adoption.  
+- Includes **edge enforcement examples** (Cloudflare, NGINX) to block unpaid crawlers.  
 
 This project is not a company product — it’s a **community reference implementation** intended to accelerate adoption of AI-native compensation standards.  
 
@@ -27,36 +36,70 @@ This project is not a company product — it’s a **community reference impleme
 
 ## 🚀 Quickstart
 
-### Validate against schema (AJV)
-
-Install AJV CLI:
-
+### 1. Clone the repo
 ```bash
-npm install -g ajv-cli@5 ajv-formats
+git clone https://github.com/oozle/ai-native-template.git
+cd ai-native-template
 ```
 
-Validate the sample fee manifest:
+### 2. Prerequisites
 
+#### On macOS (Homebrew)
 ```bash
-ajv validate -c ajv2020 -s schemas/apifee.schema.json -d apifee.json
+# Node + npm (for AJV validation)
+brew install node
+
+# Python 3 + pip (for verifier + signer)
+brew install python3
+pip3 install pynacl
 ```
 
-### Verify a signed receipt (Python verifier)
+#### On Windows (PowerShell / winget)
+```powershell
+# Node + npm
+winget install OpenJS.NodeJS
 
-Install PyNaCl:
-
-```bash
+# Python 3 + pip
+winget install Python.Python.3.11
 pip install pynacl
 ```
 
-Generate a real signed example receipt:
+#### On Linux (Debian/Ubuntu)
+```bash
+sudo apt update
+sudo apt install -y nodejs npm python3 python3-pip
+pip3 install pynacl
+```
 
+---
+
+### 3. Validate against schema (AJV)
+
+Install dependencies:
+```bash
+npm install -D ajv-cli@5 ajv@^8 ajv-formats
+```
+
+Validate the sample fee manifest:
+```bash
+npx ajv validate --spec=draft2020 -s schemas/apifee.schema.json -d apifee.json -c ajv-formats
+```
+
+Validate the sample receipt:
+```bash
+npx ajv validate --spec=draft2020 -s schemas/usage-receipt.schema.json -d examples/receipt.example.json -c ajv-formats
+```
+
+---
+
+### 4. Generate and verify a signed receipt (Python)
+
+Generate a real signed example receipt:
 ```bash
 python scripts/sign_example_receipt.py
 ```
 
 Verify it with the bundled public key:
-
 ```bash
 python packages/receipt-verifier-py/verify.py examples/receipt.example.json keys/publisher.pub
 ```
