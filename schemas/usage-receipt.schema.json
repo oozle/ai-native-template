@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oozle.github.io/ai-native-template/schemas/usage-receipt.schema.json",
+  "title": "Usage Receipt",
+  "type": "object",
+  "required": ["request_id","publisher_id","resource_id","units","fee_computed","ts","signature","alg"],
+  "properties": {
+    "request_id": { "type": "string", "minLength": 16 },
+    "publisher_id": { "type": "string" },
+    "resource_id": { "type": "string" },
+    "units": {
+      "type": "object",
+      "required": ["unit","value"],
+      "properties": {
+        "unit": { "type": "string", "enum": ["1k_tokens","byte","request"] },
+        "value": { "type": "number", "minimum": 0 }
+      }
+    },
+    "fee_computed": { "type": "number", "minimum": 0 },
+    "hash": { "type": "string", "description": "hash of response body or canonical string (optional)" },
+    "alg": { "type": "string", "enum": ["Ed25519"] },
+    "signature": { "type": "string" },
+    "ts": { "type": "string", "format": "date-time" },
+    "agent_decl": { "type": "object", "additionalProperties": true },
+    "provenance": { "type": "object", "additionalProperties": true }
+  }
+}
